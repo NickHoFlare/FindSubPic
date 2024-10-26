@@ -1,4 +1,5 @@
 ﻿using OpenCvSharp;
+using System.Diagnostics.Metrics;
 
 // Supported Filetypes: https://docs.opencv.org/3.4/d4/da8/group__imgcodecs.html#ga288b8b3da0892bd651fce07b3bbd3a56
 using (var t = new ResourcesTracker())
@@ -7,23 +8,64 @@ using (var t = new ResourcesTracker())
     var grayscale = t.T(new Mat("./assets/multipic.jpg", ImreadModes.Grayscale));
     var edgeDetection = t.NewMat();
     var dilated = t.NewMat();
-    Mat output;
 
     // Detect edges
-    //Cv2.GaussianBlur(grayscale, grayscale, new Size(5, 5), 0.5);
-    Cv2.Canny(grayscale, edgeDetection, 50, 200);
+    edgeDetection = DetectEdges(grayscale, edgeDetection);
 
-    // Apply dilation (This was the key to recognizing all 4!)
-    Cv2.Dilate(edgeDetection, dilated, null);
-    using (Mat kernel = Cv2.GetStructuringElement(MorphShapes.Rect, new Size(3, 3)))
-    {
-        Cv2.MorphologyEx(dilated, dilated, MorphTypes.Close, kernel);
-    }
+    // Apply dilation, then close it (This was the key to recognizing all 4!)
+    dilated = DilateAndClose(edgeDetection, dilated);
 
     // Find contours
-    Cv2.FindContours(dilated, out Point[][]? contours, out HierarchyIndex[] hierarchy, RetrievalModes.External, ContourApproximationModes.ApproxSimple);
+    var contours = FindContours(dilated);
+
+    if (contours == null || contours.Length == 0)
+    {
+        Console.WriteLine("No contours found.");
+        return;
+    }
+
+    // Find photos amongst the contours
+    var photos = FindPhotos(source, contours, t);
+
+    // Display the images
+    Cv2.ImShow("source", source);
+    Cv2.ImShow("edgeDetection", edgeDetection);
+    Cv2.ImShow("dilated", dilated);
+    DisplayPhotos(photos);
+
+    Cv2.WaitKey();
+}
+
+Mat DetectEdges(Mat source, Mat detectEdgesInput)
+{
+    //Cv2.GaussianBlur(grayscale, grayscale, new Size(5, 5), 0.5);
+    Cv2.Canny(source, detectEdgesInput, 50, 200);
+
+    return detectEdgesInput;
+}
+
+Mat DilateAndClose(Mat source, Mat dilateAndCloseInput)
+{
+    Cv2.Dilate(source, dilateAndCloseInput, null);
+    using (Mat kernel = Cv2.GetStructuringElement(MorphShapes.Rect, new Size(3, 3)))
+    {
+        Cv2.MorphologyEx(dilateAndCloseInput, dilateAndCloseInput, MorphTypes.Close, kernel);
+    }
+
+    return dilateAndCloseInput;
+}
+
+Point[][]? FindContours(Mat source)
+{
+    Cv2.FindContours(source, out Point[][]? contours, out HierarchyIndex[] hierarchy, RetrievalModes.External, ContourApproximationModes.ApproxSimple);
     contours = contours.Where(c => Cv2.ContourArea(c) > 1000).ToArray();
 
+    return contours;
+}
+
+List<Mat> FindPhotos(Mat originalSource, Point[][] contours, ResourcesTracker t)
+{
+    var photos = new List<Mat>();
 
     var counter = 0;
     foreach (var contour in contours)
@@ -35,21 +77,24 @@ using (var t = new ResourcesTracker())
         if (approx.Length == 4 && Cv2.IsContourConvex(approx))
         {
             // Draw the contour (the outline of the rectangle)
-            Cv2.DrawContours(source, new Point[][] { approx }, 0, Scalar.Green, 2);
+            Cv2.DrawContours(originalSource, new Point[][] { approx }, 0, Scalar.Green, 2);
 
             // Crop the rectangle
             Rect boundingBox = Cv2.BoundingRect(approx);
-            output = t.T(new Mat(source, boundingBox));
+            var photo = t.T(new Mat(originalSource, boundingBox));
 
             counter++;
-
-            Cv2.ImShow($"output{counter}", output);
+            photos.Add(photo);
         }
     }
 
-    // Display the images
-    Cv2.ImShow("source", source);
-    Cv2.ImShow("edgeDetection", edgeDetection);
+    return photos;
+}
 
-    Cv2.WaitKey();
+void DisplayPhotos(List<Mat> photos)
+{
+    for (var i = 0; i < photos.Count; i++)
+    {
+        Cv2.ImShow($"output{i}", photos[i]);
+    }
 }
