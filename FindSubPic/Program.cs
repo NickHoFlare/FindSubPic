@@ -6,15 +6,20 @@ using (var t = new ResourcesTracker())
     var source = t.T(new Mat("./assets/multipic.jpg", ImreadModes.Unchanged));
     var grayscale = t.T(new Mat("./assets/multipic.jpg", ImreadModes.Grayscale));
     var edgeDetection = t.NewMat();
+    var dilated = t.NewMat();
     Mat output;
 
     // Detect edges
     //Cv2.GaussianBlur(grayscale, grayscale, new Size(5, 5), 0.5);
     Cv2.Canny(grayscale, edgeDetection, 50, 200);
 
+    // Apply dilation (This was the key to recognizing all 4!)
+    Cv2.Dilate(edgeDetection, dilated, null);
+
     // Find contours
-    Cv2.FindContours(edgeDetection, out Point[][]? contours, out HierarchyIndex[] hierarchy, RetrievalModes.External, ContourApproximationModes.ApproxSimple);
+    Cv2.FindContours(dilated, out Point[][]? contours, out HierarchyIndex[] hierarchy, RetrievalModes.External, ContourApproximationModes.ApproxSimple);
     contours = contours.Where(c => Cv2.ContourArea(c) > 1000).ToArray();
+
 
     var counter = 0;
     foreach (var contour in contours)
