@@ -1,19 +1,16 @@
 ﻿using OpenCvSharp;
-using System.Diagnostics.Metrics;
 
 // Supported Filetypes: https://docs.opencv.org/3.4/d4/da8/group__imgcodecs.html#ga288b8b3da0892bd651fce07b3bbd3a56
 using (var t = new ResourcesTracker())
 {
     var source = t.T(new Mat("./assets/multipic.jpg", ImreadModes.Unchanged));
     var grayscale = t.T(new Mat("./assets/multipic.jpg", ImreadModes.Grayscale));
-    var edgeDetection = t.NewMat();
-    var dilated = t.NewMat();
 
     // Detect edges
-    edgeDetection = DetectEdges(grayscale, edgeDetection);
+    var edgeDetection = DetectEdges(grayscale, t);
 
     // Apply dilation, then close it (This was the key to recognizing all 4!)
-    dilated = DilateAndClose(edgeDetection, dilated);
+    var dilated = DilateAndClose(edgeDetection, t);
 
     // Find contours
     var contours = FindContours(dilated);
@@ -34,25 +31,30 @@ using (var t = new ResourcesTracker())
     DisplayPhotos(photos);
 
     Cv2.WaitKey();
+    Cv2.DestroyAllWindows();
 }
 
-Mat DetectEdges(Mat source, Mat detectEdgesInput)
+Mat DetectEdges(Mat source, ResourcesTracker t)
 {
+    var detectEdges = t.NewMat();
+
     //Cv2.GaussianBlur(grayscale, grayscale, new Size(5, 5), 0.5);
-    Cv2.Canny(source, detectEdgesInput, 50, 200);
+    Cv2.Canny(source, detectEdges, 50, 200);
 
-    return detectEdgesInput;
+    return detectEdges;
 }
 
-Mat DilateAndClose(Mat source, Mat dilateAndCloseInput)
+Mat DilateAndClose(Mat source, ResourcesTracker t)
 {
-    Cv2.Dilate(source, dilateAndCloseInput, null);
+    var dilated = t.NewMat();
+    
+    Cv2.Dilate(source, dilated, null);
     using (Mat kernel = Cv2.GetStructuringElement(MorphShapes.Rect, new Size(3, 3)))
     {
-        Cv2.MorphologyEx(dilateAndCloseInput, dilateAndCloseInput, MorphTypes.Close, kernel);
+        Cv2.MorphologyEx(dilated, dilated, MorphTypes.Close, kernel);
     }
 
-    return dilateAndCloseInput;
+    return dilated;
 }
 
 Point[][]? FindContours(Mat source)
