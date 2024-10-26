@@ -15,6 +15,10 @@ using (var t = new ResourcesTracker())
 
     // Apply dilation (This was the key to recognizing all 4!)
     Cv2.Dilate(edgeDetection, dilated, null);
+    using (Mat kernel = Cv2.GetStructuringElement(MorphShapes.Rect, new Size(3, 3)))
+    {
+        Cv2.MorphologyEx(dilated, dilated, MorphTypes.Close, kernel);
+    }
 
     // Find contours
     Cv2.FindContours(dilated, out Point[][]? contours, out HierarchyIndex[] hierarchy, RetrievalModes.External, ContourApproximationModes.ApproxSimple);
