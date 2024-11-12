@@ -12,6 +12,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\FindSubPicUtil\FindSubPicUtil.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="assets\multipic.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

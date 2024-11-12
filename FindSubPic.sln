@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FindSubPic", "FindSubPic\FindSubPic.csproj", "{9D8B42B4-3096-4E3D-BEEC-BEF43DB5ABF6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FindSubPic", "FindSubPic\FindSubPic.csproj", "{9D8B42B4-3096-4E3D-BEEC-BEF43DB5ABF6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FindSubPicUtil", "FindSubPicUtil\FindSubPicUtil.csproj", "{9732859B-322B-4CA7-954C-B30EC1EE736E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{9D8B42B4-3096-4E3D-BEEC-BEF43DB5ABF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9D8B42B4-3096-4E3D-BEEC-BEF43DB5ABF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9D8B42B4-3096-4E3D-BEEC-BEF43DB5ABF6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9732859B-322B-4CA7-954C-B30EC1EE736E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9732859B-322B-4CA7-954C-B30EC1EE736E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9732859B-322B-4CA7-954C-B30EC1EE736E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9732859B-322B-4CA7-954C-B30EC1EE736E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
