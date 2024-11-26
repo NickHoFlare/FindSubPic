@@ -83,9 +83,6 @@ public class FindSubPic : IFindSubPic, IDisposable
             // We want only rectangles
             if (approx.Length == 4 && Cv2.IsContourConvex(approx))
             {
-                // Draw the contour (the outline of the rectangle)
-                Cv2.DrawContours(originalSource, new Point[][] { approx }, 0, Scalar.Green, 2);
-
                 // Crop the rectangle
                 Rect boundingBox = Cv2.BoundingRect(approx);
                 var photo = _tracker.T(new Mat(originalSource, boundingBox));
@@ -113,20 +110,41 @@ public class FindSubPic : IFindSubPic, IDisposable
         Cv2.WaitKey();
     }
 
-    // TODO: Give each subpic unique filename
-    public void SaveSubPics(string destinationDirectory, string fileName, ImageFileType fileType)
+    public void SaveSubPics(string destinationDirectory, string fileName, ImageFileType fileType, bool createDirectory = false)
     {
         if (!Directory.Exists(destinationDirectory))
         {
-            throw new InvalidDirectoryException("The destination directory does not exist.");
+            if (createDirectory)
+            {
+                Directory.CreateDirectory(destinationDirectory);
+            }
+            else
+            {
+                throw new InvalidDirectoryException("The destination directory does not exist.");
+            }
         }
 
-        var destinationPath = $"{destinationDirectory}/{fileName}.{fileType.ToString().ToLower()}";
+        var counter = CalculateCounter(destinationDirectory, fileName, fileType);
+        var numSaved = 0;
         
         foreach (var subPic in _subPics)
         {
+            var destinationPath = $"{destinationDirectory}/{fileName}{counter}.{fileType.ToString().ToLower()}";
+
             subPic.SaveImage(destinationPath);
+            counter++;
+            numSaved++;
         }
+
+        Console.WriteLine($"{numSaved} pics saved successfully");
+    }
+
+    private int CalculateCounter(string destinationDirectory, string fileName, ImageFileType fileType)
+    {
+        var files = Directory.GetFiles(destinationDirectory);
+        var numFiles = files.Count(f => f.Contains(fileName));
+        
+        return numFiles >= 1 ? numFiles + 1 : 1;
     }
 
     public void Dispose()
@@ -139,5 +157,5 @@ public interface IFindSubPic
 {
     void DisplaySourceImage();
     void DisplaySubPics();
-    void SaveSubPics(string destinationDirectory, string fileName, ImageFileType fileType);
+    void SaveSubPics(string destinationDirectory, string fileName, ImageFileType fileType, bool createDirectory = false);
 }

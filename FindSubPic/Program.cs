@@ -3,4 +3,5 @@
 var subPics = new FindSubPic("./assets/multipic.jpg");
 
 //subPics.DisplaySourceImage();
-subPics.DisplaySubPics();
+//subPics.DisplaySubPics();
+subPics.SaveSubPics("./test", "test", Constants.ImageFileType.Jpg, true);
